@@ -68,7 +68,7 @@ diskReadSector:
 	mov cl, [readLoopCount]
 .loop:
 	mov [readLoopCount], cl
-	
+
 	;Hardcodes CHS value to 0,0,2 for test
 	mov ah, 0x2			
 	mov al, 1				; 1 sector
@@ -76,21 +76,15 @@ diskReadSector:
 	mov ch, 0x00			; Cylinder number
 	mov cl, 0x2				; Sector number (bits 0-5) and high 2 bits of cylinder (0)
 
-	mov es, bx
-	mov bx, 0x7E00
-	;mov es, bx
-	
-	;xor bx, bx
-
-	mov dh, 0
-	
-	mov dl, [driveId]
+	xor bx, bx
+	mov es, bx				; es = 0x00
+	mov bx, 0x7E00			; Destionation
+	mov dh, 0				; Head number
+	mov dl, [driveId]		; Drive number
 	
 	int 0x13
 	
-	;jnc .done
-	cmp al, 1
-	jz .done
+	jnc .done
 
 	mov cl, [readLoopCount]
 	loop .loop				; Rety it 10 times because of, why not
@@ -119,7 +113,6 @@ print:
 	push bx
 	
 	xor ax, ax
-	xor bx, bx
 
 	mov ah, 0xE
 	mov bx, 0x0
