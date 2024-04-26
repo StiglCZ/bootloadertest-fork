@@ -2,8 +2,8 @@ FILES = boot loader
 
 all: folders $(FILES)
 	rm -rf ./bin/boot.bin
-	dd if=./bin/stage1.bin >> ./bin/boot.bin
-	dd if=./bin/stage2.bin >> ./bin/boot.bin
+	cat bin/stage1.bin > bin/boot.bin
+	cat bin/stage2.bin >> bin/boot.bin
 
 folders:
 	mkdir -p ./bin/
