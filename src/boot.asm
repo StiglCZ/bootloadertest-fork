@@ -136,9 +136,9 @@ secPerTrack: db 63
 
 readLoopCount db 10
 
-welcomeMessage: db 'BIOS Bootloader test',0xa,0xd, 0
-driveReadError: db 'There was an error reading from disk', 0xa, 0xd, 0
-errorNumber: db 'Error No:', 0, 0xa, 0xd, 0
+welcomeMessage: db 'BIOS Bootloader test',10, 13, 0
+driveReadError: db 'There was an error reading from disk', 10, 13, 0
+errorNumber: db 'Error No:', 0, 10, 13, 0
 
 times 510- ($-$$) db 0
 dw 0xAA55
