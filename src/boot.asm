@@ -30,8 +30,9 @@ SystemIDString 			db 'FAT16   '
 
 
 start:
-	jmp 0x0:$+1						; Set CS to 0
-	
+	jmp 0x0:jmpGoal						; Set CS to 0
+
+jmpGoal:
 	cli
 
 	mov ax, 0
