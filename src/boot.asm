@@ -5,27 +5,26 @@ _start:
 	jmp short start
 	nop
 
-; FAT16 header
-OEMIdentifier			db 'BOBAOS  '
+OEMIdentifier			db 'TEST    '
 BytesPerSector			dw 0x200
-SectorsPerCluser 		db 0x80
-ReservedSectors			dw 200			; Store kernel in the reserved sectors
-FATCopies 				db 0x02
-RootDirEntries			dw 0x40
-NumSectors				dw 0x00
-MediaType				db 0xF8
-SectorsPerFat			dw 0x100
-SectorsPerTrack			dw 0x20
-NumberOfHeads			dw 0x40
-HiddenSectors			dd 0x00
-SectorsBig 				dd 0x773594
+SectorsPerCluser 		db 1
+ReservedSectors			dw 100
+FATCopies 				db 0x1
+RootDirEntries			dw 16
+NumSectors				dw 65535
+MediaType				db 0xF8			;0xF0 = Floppy; 0xF8 = HDD
+SectorsPerFat			dw 255
+SectorsPerTrack			dw 0
+NumberOfHeads			dw 0
+HiddenSectors			dd 0
+SectorsBig 				dd 0
 
 ; Extended BPB
-DriveNumber				db 0x80
+DriveNumber				db 0x00
 WinNTBit				db 0x00
 Signature 				db 0x29
 VolumeID				dd 0xD106
-VolumeIDString 			db 'BOBAOS BOOT'
+VolumeIDString 			db 'TEST   BOOT'
 SystemIDString 			db 'FAT16   '
 
 
@@ -141,7 +140,7 @@ partition_table:
 	db 0x00		; Starting head
 	db 0x00		; Starting sector and cylinder
 	db 0x00		; staring cylinder
-	db 0x0E		; Partition type
+	db 0x0E		; Partition type (System ID)
 	db 0x00		; Enbding head
 	db 0x00		; Ending sector 6bit
 	db 0x00		; Ending sector 10 bit (4 byte)
