@@ -5,28 +5,30 @@ _start:
 	jmp short start
 	nop
 
-; 1.44MB floppy from https://stackoverflow.com/questions/47277702/custom-bootloader-booted-via-usb-drive-produces-incorrect-output-on-some-compute/47320115#47320115
-OEMIdentifier			db 'TEST    '
+; FAT16 header
+OEMIdentifier			db 'BOBAOS  '
 BytesPerSector			dw 0x200
-SectorsPerCluser 		db 1
-ReservedSectors			dw 1
+SectorsPerCluser 		db 0x80
+ReservedSectors			dw 200			; Store kernel in the reserved sectors
 FATCopies 				db 0x02
-RootDirEntries			dw 224
-NumSectors				dw 2880
-MediaType				db 0xF0			;0xF0 = Floppy; 0xF8 = HDD
-SectorsPerFat			dw 9
-SectorsPerTrack			dw 18
-NumberOfHeads			dw 2
-HiddenSectors			dd 0
-SectorsBig 				dd 0
+RootDirEntries			dw 0x40
+NumSectors				dw 0x00
+MediaType				db 0xF8
+SectorsPerFat			dw 0x100
+SectorsPerTrack			dw 0x20
+NumberOfHeads			dw 0x40
+HiddenSectors			dd 0x00
+SectorsBig 				dd 0x773594
 
 ; Extended BPB
-DriveNumber				db 0x00
+DriveNumber				db 0x80
 WinNTBit				db 0x00
 Signature 				db 0x29
 VolumeID				dd 0xD106
-VolumeIDString 			db 'TEST   BOOT'
-SystemIDString 			db 'FAT12   '
+VolumeIDString 			db 'BOBAOS BOOT'
+SystemIDString 			db 'FAT16   '
+
+
 
 start:
 	jmp 0x0:$+1						; Set CS to 0
@@ -62,32 +64,32 @@ diskReadSector:
 	push dx
 	push bx
 
-	xor cx, cx
-	xor bx, bx
-
-	mov cl, [readLoopCount]
-.loop:
-	mov [readLoopCount], cl
-
 	;Hardcodes CHS value to 0,0,2 for test
-	mov ah, 0x2			
-	mov al, 1				; 1 sector
 
-	mov ch, 0x00			; Cylinder number
+	mov al, 1				; 1 sector
+	mov ah, 0x2			
+
 	mov cl, 0x2				; Sector number (bits 0-5) and high 2 bits of cylinder (0)
+	mov ch, 0x00			; Cylinder number
 
 	xor bx, bx
 	mov es, bx				; es = 0x00
 	mov bx, 0x7E00			; Destionation
-	mov dh, 0				; Head number
 	mov dl, [driveId]		; Drive number
+	mov dh, 0				; Head number
+
 	
 	int 0x13
 	
-	jnc .done
+	jc .error
 
-	mov cl, [readLoopCount]
-	loop .loop				; Rety it 10 times because of, why not
+.done:
+	pop bx
+	pop dx
+	pop cx
+	pop ax
+
+	ret
 
 .error:
 	mov si, driveReadError
@@ -99,14 +101,6 @@ diskReadSector:
 	call print
 
 	jmp $
-
-.done:
-	pop bx
-	pop dx
-	pop cx
-	pop ax
-
-	ret
 
 print:
 	push ax
@@ -140,5 +134,26 @@ welcomeMessage: db 'BIOS Bootloader test',10, 13, 0
 driveReadError: db 'There was an error reading from disk', 10, 13, 0
 errorNumber: db 'Error No:', 0, 10, 13, 0
 
-times 510- ($-$$) db 0
+times 446- ($-$$) db 0
+
+partition_table:
+	db 0x80		; Bootable FLAG 0x80 = bootable
+	db 0x00		; Starting head
+	db 0x00		; Starting sector and cylinder
+	db 0x00		; staring cylinder
+	db 0x0E		; Partition type
+	db 0x00		; Enbding head
+	db 0x00		; Ending sector 6bit
+	db 0x00		; Ending sector 10 bit (4 byte)
+	db 0x00		; Relative sector 32 bit
+	db 0x00
+	db 0x00
+	db 0x00
+	db 0xFF		; Total sectors 32 bit (4 bytes)
+	db 0xFF
+	db 0x00
+	db 0x00
+
+times 48 db 0
+
 dw 0xAA55
