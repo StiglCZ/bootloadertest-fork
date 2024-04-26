@@ -5,11 +5,11 @@ _start:
 	jmp short start
 	nop
 
-; 1.44MB floppy
-OEMIdentifier			db 'BOBAOS  '
+; 1.44MB floppy from https://stackoverflow.com/questions/47277702/custom-bootloader-booted-via-usb-drive-produces-incorrect-output-on-some-compute/47320115#47320115
+OEMIdentifier			db 'TEST    '
 BytesPerSector			dw 0x200
 SectorsPerCluser 		db 1
-ReservedSectors			dw 1			; Store kernel in the reserved sectors
+ReservedSectors			dw 1
 FATCopies 				db 0x02
 RootDirEntries			dw 224
 NumSectors				dw 2880
@@ -25,7 +25,7 @@ DriveNumber				db 0x00
 WinNTBit				db 0x00
 Signature 				db 0x29
 VolumeID				dd 0xD106
-VolumeIDString 			db 'BOBAOS BOOT'
+VolumeIDString 			db 'TEST   BOOT'
 SystemIDString 			db 'FAT12   '
 
 start:
@@ -62,22 +62,19 @@ diskReadSector:
 	push dx
 	push bx
 
-	xor ax, ax
-	xor bx, bx
 	xor cx, cx
-	xor dx, dx
+	xor bx, bx
 
 	mov cl, [readLoopCount]
 .loop:
 	mov [readLoopCount], cl
 	
-	xor cx, cx
+	;Hardcodes CHS value to 0,0,2 for test
+	mov ah, 0x2			
+	mov al, 1				; 1 sector
 
-	mov ah, 0x2
-	mov al, 1
-
-	mov ch, 0x00
-	mov cl, 0x2
+	mov ch, 0x00			; Cylinder number
+	mov cl, 0x2				; Sector number (bits 0-5) and high 2 bits of cylinder (0)
 
 	mov es, bx
 	mov bx, 0x7E00
@@ -96,7 +93,7 @@ diskReadSector:
 	jz .done
 
 	mov cl, [readLoopCount]
-	loop .loop
+	loop .loop				; Rety it 10 times because of, why not
 
 .error:
 	mov si, driveReadError
