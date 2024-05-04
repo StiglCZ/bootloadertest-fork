@@ -41,6 +41,7 @@ jmpGoal:
 	mov di, ax
 	mov ss, ax
 	mov fs, ax
+        mov gs, ax
 	mov sp, 0x7C00
 
 	sti
@@ -154,6 +155,5 @@ partition_table:
 	db 0x00
 	db 0x00
 
-times 48 db 0
-
+times 510-($-$$) db 0
 dw 0xAA55
